@@ -70,24 +70,28 @@ app.post('/api/contact', async (req, res) => {
     
     const result = await pool.query(query, [name, email, phone, message, submissionType]);
     
-    // Send email notification (if configured)
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM,
-        to: process.env.EMAIL_USER,
-        subject: `New Contact Form Submission - ${submissionType}`,
-        html: `
-          <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email || 'Not provided'}</p>
-          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-          <p><strong>Message:</strong> ${message}</p>
-          <p><strong>Type:</strong> ${submissionType}</p>
-          <p><strong>Submitted at:</strong> ${result.rows[0].created_at}</p>
-        `
-      };
-      
-      await transporter.sendMail(mailOptions);
+    // Send email notification (if configured and valid)
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD && process.env.EMAIL_PASSWORD !== 'your_email_password_here') {
+      try {
+        const mailOptions = {
+          from: process.env.EMAIL_FROM,
+          to: process.env.EMAIL_USER,
+          subject: `New Contact Form Submission - ${submissionType}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email || 'Not provided'}</p>
+            <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+            <p><strong>Message:</strong> ${message}</p>
+            <p><strong>Type:</strong> ${submissionType}</p>
+            <p><strong>Submitted at:</strong> ${result.rows[0].created_at}</p>
+          `
+        };
+        
+        await transporter.sendMail(mailOptions);
+      } catch (emailError) {
+        console.log('Email notification skipped:', emailError.message);
+      }
     }
     
     res.json({ 
@@ -167,26 +171,30 @@ app.post('/api/quote', async (req, res) => {
       numEmployees, currentProvider, interestedIn
     ]);
     
-    // Send email notification
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
-      const mailOptions = {
-        from: process.env.EMAIL_FROM,
-        to: process.env.EMAIL_USER,
-        subject: `New Group Insurance Quote Request - ${companyName || 'Individual'}`,
-        html: `
-          <h2>New Quote Request</h2>
-          <p><strong>Company:</strong> ${companyName || 'N/A'}</p>
-          <p><strong>Contact Name:</strong> ${contactName}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-          <p><strong>Number of Employees:</strong> ${numEmployees || 'Not specified'}</p>
-          <p><strong>Current Provider:</strong> ${currentProvider || 'None'}</p>
-          <p><strong>Interested In:</strong> ${interestedIn || 'General Information'}</p>
-          <p><strong>Submitted at:</strong> ${result.rows[0].created_at}</p>
-        `
-      };
-      
-      await transporter.sendMail(mailOptions);
+    // Send email notification (if configured and valid)
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD && process.env.EMAIL_PASSWORD !== 'your_email_password_here') {
+      try {
+        const mailOptions = {
+          from: process.env.EMAIL_FROM,
+          to: process.env.EMAIL_USER,
+          subject: `New Group Insurance Quote Request - ${companyName || 'Individual'}`,
+          html: `
+            <h2>New Quote Request</h2>
+            <p><strong>Company:</strong> ${companyName || 'N/A'}</p>
+            <p><strong>Contact Name:</strong> ${contactName}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+            <p><strong>Number of Employees:</strong> ${numEmployees || 'Not specified'}</p>
+            <p><strong>Current Provider:</strong> ${currentProvider || 'None'}</p>
+            <p><strong>Interested In:</strong> ${interestedIn || 'General Information'}</p>
+            <p><strong>Submitted at:</strong> ${result.rows[0].created_at}</p>
+          `
+        };
+        
+        await transporter.sendMail(mailOptions);
+      } catch (emailError) {
+        console.log('Email notification skipped:', emailError.message);
+      }
     }
     
     res.json({ 
